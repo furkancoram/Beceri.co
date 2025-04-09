@@ -41,15 +41,18 @@ export default function ProfilePage() {
   };
 
   const fetchPosts = async () => {
-    const q = query(
-      collection(db, 'posts'),
-      where('uid', '==', user.uid),
-      orderBy('createdAt', 'desc')
-    );
-    const querySnapshot = await getDocs(q);
-    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setPosts(data);
-  };
+  const q = query(
+    collection(db, 'posts'),
+    where('uid', '==', user.uid),
+    orderBy('createdAt', 'desc')
+  );
+  const querySnapshot = await getDocs(q);
+  const data = querySnapshot.docs
+    .filter(doc => doc.data().createdAt) // ✅ Yalnızca timestamp oluşmuş olanları al
+    .map(doc => ({ id: doc.id, ...doc.data() }));
+  setPosts(data);
+};
+
 
   const handlePost = async () => {
     if (newPost.trim() === '' || newPost.length > 250) return;
