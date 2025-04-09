@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
 import Home from './pages/Home';
 import Register from './pages/Register';
-import Profile from './pages/Profile';         // Profil düzenleme sayfası
-import ProfilePage from './pages/ProfilePage'; // Twitter tarzı profil sayfası
+import Login from './pages/Login';
+import Profile from './pages/Profile'; // Düzenleme ekranı
+import ProfilePage from './pages/ProfilePage'; // Twitter tarzı görünüm
 
 function App() {
   return (
@@ -11,9 +13,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/kayit" element={<Register />} />
+        <Route path="/giris" element={<Login />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/profilim" element={<ProfilePage />} />
-        {/* Giriş sayfası ekleyeceğimizde buraya gelir */}
+        {/* 🔜 İleride: Public profil ve keşfet vs. */}
       </Routes>
     </BrowserRouter>
   );
