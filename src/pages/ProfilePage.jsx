@@ -63,6 +63,7 @@ export default function ProfilePage() {
   };
 
   const formatTimeAgo = (timestamp) => {
+    if (!timestamp || !timestamp.toDate) return 'yükleniyor...';
     const now = new Date();
     const postDate = timestamp.toDate();
     const diff = Math.floor((now - postDate) / 1000);
