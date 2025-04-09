@@ -1,4 +1,3 @@
-// src/pages/ProfilePage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
@@ -13,45 +12,50 @@ import {
   orderBy,
   serverTimestamp
 } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const user = auth.currentUser;
-
+  const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
   const [activeTab, setActiveTab] = useState('gonderiler');
 
   useEffect(() => {
-    if (!user) {
-      navigate('/giris');
-    } else {
-      fetchProfile();
-      fetchPosts();
-    }
-  }, [user]);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        fetchProfile(currentUser.uid);
+        fetchPosts(currentUser.uid);
+      } else {
+        navigate('/giris');
+      }
+    });
 
-  const fetchProfile = async () => {
-    const docRef = doc(db, 'users', user.uid);
+    return () => unsubscribe();
+  }, []);
+
+  const fetchProfile = async (uid) => {
+    const docRef = doc(db, 'users', uid);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       setProfile(docSnap.data());
     }
   };
 
-  const fetchPosts = async () => {
-  const q = query(
-    collection(db, 'posts'),
-    where('uid', '==', user.uid),
-    orderBy('createdAt', 'desc')
-  );
-  const querySnapshot = await getDocs(q);
-  const data = querySnapshot.docs
-    .filter(doc => doc.data().createdAt) // ✅ createdAt tanımlı olanları filtrele
-    .map(doc => ({ id: doc.id, ...doc.data() }));
-  setPosts(data);
-};
+  const fetchPosts = async (uid) => {
+    const q = query(
+      collection(db, 'posts'),
+      where('uid', '==', uid),
+      orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs
+      .filter(doc => doc.data().createdAt)
+      .map(doc => ({ id: doc.id, ...doc.data() }));
+    setPosts(data);
+  };
 
   const handlePost = async () => {
     if (newPost.trim() === '' || newPost.length > 250) return;
@@ -61,7 +65,7 @@ export default function ProfilePage() {
       createdAt: serverTimestamp(),
     });
     setNewPost('');
-    fetchPosts();
+    fetchPosts(user.uid);
   };
 
   const formatTimeAgo = (timestamp) => {
@@ -93,7 +97,7 @@ export default function ProfilePage() {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold">{profile.name} {profile.surname}</h2>
-            <p className="text-gray-500">@{user.email.split('@')[0]}</p>
+            <p className="text-gray-500">@{user?.email?.split('@')[0]}</p>
           </div>
           <button
             onClick={() => navigate('/profil')}
