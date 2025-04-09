@@ -66,7 +66,9 @@ export default function ProfilePage() {
       createdAt: serverTimestamp(),
     });
     setNewPost('');
-    fetchPosts(user.uid);
+    setTimeout(() => {
+      fetchPosts(user.uid);
+    }, 2000); // ⏳ Firestore timestamp oluşması için gecikme
   };
 
   const formatTimeAgo = (timestamp) => {
