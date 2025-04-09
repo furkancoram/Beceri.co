@@ -14,20 +14,24 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      await createUserWithEmailAndPassword(auth, form.email, form.password);
+      const result = await createUserWithEmailAndPassword(auth, form.email, form.password);
+      console.log('Kayıt Başarılı:', result.user);
       alert('Kayıt başarılı!');
       navigate('/');
     } catch (err) {
+      console.error('Kayıt Hatası:', err);
       setError(err.message);
     }
   };
 
   const handleGoogleSignup = async () => {
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      console.log('Google ile giriş:', result.user);
       alert('Google ile giriş başarılı!');
       navigate('/');
     } catch (err) {
+      console.error('Google Hatası:', err);
       setError(err.message);
     }
   };
