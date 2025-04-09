@@ -75,7 +75,7 @@ export default function Profile() {
       });
 
       alert("Profiliniz başarıyla kaydedildi!");
-      navigate('/profil'); // aynı sayfada kalabiliriz
+      navigate('/profilim'); // aynı sayfada kalabiliriz
     } catch (err) {
       console.error("Firestore kayıt hatası:", err);
       alert("Profil kaydedilirken bir hata oluştu.");
