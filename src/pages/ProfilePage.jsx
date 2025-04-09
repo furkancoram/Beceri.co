@@ -2,7 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
-import { doc, getDoc, collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  serverTimestamp
+} from 'firebase/firestore';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -11,6 +21,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState('');
+  const [activeTab, setActiveTab] = useState('gonderiler');
 
   useEffect(() => {
     if (!user) {
@@ -30,21 +41,39 @@ export default function ProfilePage() {
   };
 
   const fetchPosts = async () => {
-    const q = query(collection(db, 'posts'), where('uid', '==', user.uid), orderBy('createdAt', 'desc'));
+    const q = query(
+      collection(db, 'posts'),
+      where('uid', '==', user.uid),
+      orderBy('createdAt', 'desc')
+    );
     const querySnapshot = await getDocs(q);
     const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setPosts(data);
   };
 
   const handlePost = async () => {
-    if (newPost.trim() === '') return;
+    if (newPost.trim() === '' || newPost.length > 250) return;
     await addDoc(collection(db, 'posts'), {
       uid: user.uid,
       content: newPost,
-      createdAt: new Date(),
+      createdAt: serverTimestamp(),
     });
     setNewPost('');
     fetchPosts();
+  };
+
+  const formatTimeAgo = (timestamp) => {
+    const now = new Date();
+    const postDate = timestamp.toDate();
+    const diff = Math.floor((now - postDate) / 1000);
+
+    if (diff < 60) return `${diff} sn`;
+    if (diff < 3600) return `${Math.floor(diff / 60)} dk`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} sa`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} gün`;
+    if (diff < 2592000) return `${Math.floor(diff / 604800)} hafta`;
+    if (diff < 31536000) return `${Math.floor(diff / 2592000)} ay`;
+    return `${Math.floor(diff / 31536000)} yıl`;
   };
 
   if (!profile) return <div className="text-center p-8">Yükleniyor...</div>;
@@ -82,10 +111,12 @@ export default function ProfilePage() {
         <textarea
           value={newPost}
           onChange={(e) => setNewPost(e.target.value)}
-          placeholder="Ne paylaşmak istersin?"
+          placeholder="Ne paylaşmak istersin? (En fazla 250 karakter)"
           className="w-full p-3 border rounded-lg mb-2 dark:bg-gray-800 dark:text-white"
           rows={3}
+          maxLength={250}
         />
+        <div className="text-right text-sm text-gray-400 mb-2">{newPost.length}/250</div>
         <button
           onClick={handlePost}
           className="bg-mint text-navy font-semibold px-6 py-2 rounded-xl hover:opacity-90 transition"
@@ -94,15 +125,30 @@ export default function ProfilePage() {
         </button>
       </div>
 
+      {/* SEKME MENÜSÜ */}
+      <div className="mt-8 px-4 border-b flex gap-6 text-sm font-semibold text-gray-500 dark:text-gray-300">
+        <button onClick={() => setActiveTab('gonderiler')} className={activeTab === 'gonderiler' ? 'text-navy dark:text-mint border-b-2 border-mint pb-2' : 'pb-2'}>
+          Gönderiler
+        </button>
+        <button onClick={() => setActiveTab('yanitlar')} className={activeTab === 'yanitlar' ? 'text-navy dark:text-mint border-b-2 border-mint pb-2' : 'pb-2'}>
+          Yanıtlar
+        </button>
+        <button onClick={() => setActiveTab('begeniler')} className={activeTab === 'begeniler' ? 'text-navy dark:text-mint border-b-2 border-mint pb-2' : 'pb-2'}>
+          Beğeniler
+        </button>
+      </div>
+
       {/* GÖNDERİLER */}
-      <div className="mt-6 px-4">
-        <h3 className="text-lg font-semibold mb-2">Gönderiler</h3>
-        {posts.map((post) => (
+      <div className="mt-4 px-4">
+        {activeTab === 'gonderiler' && posts.map((post) => (
           <div key={post.id} className="p-4 mb-3 border rounded-lg dark:bg-gray-800 dark:text-white">
             <p>{post.content}</p>
-            <p className="text-sm text-gray-400 mt-1">{new Date(post.createdAt.seconds * 1000).toLocaleString('tr-TR')}</p>
+            <p className="text-sm text-gray-400 mt-1">{formatTimeAgo(post.createdAt)}</p>
           </div>
         ))}
+        {activeTab !== 'gonderiler' && (
+          <p className="text-gray-400 text-sm mt-4">Bu sekme şu anda yapım aşamasında.</p>
+        )}
       </div>
     </div>
   );
