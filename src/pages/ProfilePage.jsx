@@ -1,3 +1,4 @@
+// src/pages/ProfilePage.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../firebase';
@@ -58,7 +59,7 @@ export default function ProfilePage() {
   };
 
   const handlePost = async () => {
-    if (newPost.trim() === '' || newPost.length > 250) return;
+    if (newPost.trim() === '' || newPost.length > 250 || !user) return;
     await addDoc(collection(db, 'posts'), {
       uid: user.uid,
       content: newPost,
@@ -83,7 +84,7 @@ export default function ProfilePage() {
     return `${Math.floor(diff / 31536000)} yıl`;
   };
 
-  if (!profile) return <div className="text-center p-8">Yükleniyor...</div>;
+  if (!profile || !user) return <div className="text-center p-8">Yükleniyor...</div>;
 
   return (
     <div className="max-w-3xl mx-auto p-4">
@@ -97,7 +98,7 @@ export default function ProfilePage() {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold">{profile.name} {profile.surname}</h2>
-            <p className="text-gray-500">@{user?.email?.split('@')[0]}</p>
+            <p className="text-gray-500">@{user.email.split('@')[0]}</p>
           </div>
           <button
             onClick={() => navigate('/profil')}
