@@ -11,4 +11,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/profil" element={<Profile />} />
         <Route path="/kayit" element={<Register />} />
-        {/* Giriş yap sayfası ekleyeceksek: <Route path="/giris" element={<Login />} />*
+        {/* Giriş yap sayfası ekleyeceksek: <Route path="/giris" element={<Login />} /> */}
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
