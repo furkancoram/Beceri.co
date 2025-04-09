@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 
 export default function Profile() {
@@ -17,7 +18,8 @@ export default function Profile() {
     skillInput: '',
     hobbies: [],
     hobbyInput: '',
-    bio: ''
+    bio: '',
+    isPublic: true // 👈 profil herkese açık mı?
   });
 
   useEffect(() => {
@@ -28,8 +30,8 @@ export default function Profile() {
   }, [user, navigate]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setForm({ ...form, [name]: type === 'checkbox' ? checked : value });
   };
 
   const handleAddSkill = () => {
@@ -52,11 +54,32 @@ export default function Profile() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('📌 Profil Verileri:', form);
-    alert('Profil başarıyla kaydedildi!');
-    navigate('/profil'); // kendini yenileme gibi çalışır
+
+    try {
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        name: form.name,
+        surname: form.surname,
+        gender: form.gender,
+        birthDate: form.birthDate,
+        city: form.city,
+        district: form.district,
+        skills: form.skills,
+        hobbies: form.hobbies,
+        bio: form.bio,
+        isPublic: form.isPublic,
+        createdAt: new Date()
+      });
+
+      alert("Profiliniz başarıyla kaydedildi!");
+      navigate('/profil'); // aynı sayfada kalabiliriz
+    } catch (err) {
+      console.error("Firestore kayıt hatası:", err);
+      alert("Profil kaydedilirken bir hata oluştu.");
+    }
   };
 
   return (
@@ -69,82 +92,36 @@ export default function Profile() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex gap-4">
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Adınız"
-            className="w-1/2 p-2 border rounded dark:bg-gray-800 dark:text-white"
-            required
-          />
-          <input
-            type="text"
-            name="surname"
-            value={form.surname}
-            onChange={handleChange}
-            placeholder="Soyadınız"
-            className="w-1/2 p-2 border rounded dark:bg-gray-800 dark:text-white"
-            required
-          />
+          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Adınız"
+            className="w-1/2 p-2 border rounded dark:bg-gray-800 dark:text-white" required />
+          <input type="text" name="surname" value={form.surname} onChange={handleChange} placeholder="Soyadınız"
+            className="w-1/2 p-2 border rounded dark:bg-gray-800 dark:text-white" required />
         </div>
 
-        <select
-          name="gender"
-          value={form.gender}
-          onChange={handleChange}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
-          required
-        >
+        <select name="gender" value={form.gender} onChange={handleChange}
+          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white" required>
           <option value="">Cinsiyet Seçiniz</option>
           <option value="Kadın">Kadın</option>
           <option value="Erkek">Erkek</option>
         </select>
 
-        <input
-          type="date"
-          name="birthDate"
-          value={form.birthDate}
-          onChange={handleChange}
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
-        />
+        <input type="date" name="birthDate" value={form.birthDate} onChange={handleChange}
+          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white" />
 
-        <input
-          type="text"
-          name="city"
-          value={form.city}
-          onChange={handleChange}
-          placeholder="Yaşadığınız İl"
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
-        />
+        <input type="text" name="city" value={form.city} onChange={handleChange} placeholder="Yaşadığınız İl"
+          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white" />
 
-        <input
-          type="text"
-          name="district"
-          value={form.district}
-          onChange={handleChange}
-          placeholder="İlçe"
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
-        />
+        <input type="text" name="district" value={form.district} onChange={handleChange} placeholder="İlçe"
+          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white" />
 
         {/* Beceriler */}
         <div>
           <label className="block mb-1 font-semibold text-navy dark:text-mint">Beceriler</label>
           <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={form.skillInput}
-              onChange={(e) => setForm({ ...form, skillInput: e.target.value })}
-              placeholder="Bir beceri yaz..."
-              className="flex-grow p-2 border rounded dark:bg-gray-800 dark:text-white"
-            />
-            <button
-              type="button"
-              onClick={handleAddSkill}
-              className="bg-mint text-navy px-4 py-2 rounded hover:opacity-90"
-            >
-              Ekle
-            </button>
+            <input type="text" value={form.skillInput} onChange={(e) => setForm({ ...form, skillInput: e.target.value })}
+              placeholder="Bir beceri yaz..." className="flex-grow p-2 border rounded dark:bg-gray-800 dark:text-white" />
+            <button type="button" onClick={handleAddSkill}
+              className="bg-mint text-navy px-4 py-2 rounded hover:opacity-90">Ekle</button>
           </div>
           <ul className="flex flex-wrap gap-2">
             {form.skills.map((skill, i) => (
@@ -157,20 +134,10 @@ export default function Profile() {
         <div>
           <label className="block mb-1 font-semibold text-navy dark:text-mint">Hobiler</label>
           <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={form.hobbyInput}
-              onChange={(e) => setForm({ ...form, hobbyInput: e.target.value })}
-              placeholder="Bir hobi yaz..."
-              className="flex-grow p-2 border rounded dark:bg-gray-800 dark:text-white"
-            />
-            <button
-              type="button"
-              onClick={handleAddHobby}
-              className="bg-mint text-navy px-4 py-2 rounded hover:opacity-90"
-            >
-              Ekle
-            </button>
+            <input type="text" value={form.hobbyInput} onChange={(e) => setForm({ ...form, hobbyInput: e.target.value })}
+              placeholder="Bir hobi yaz..." className="flex-grow p-2 border rounded dark:bg-gray-800 dark:text-white" />
+            <button type="button" onClick={handleAddHobby}
+              className="bg-mint text-navy px-4 py-2 rounded hover:opacity-90">Ekle</button>
           </div>
           <ul className="flex flex-wrap gap-2">
             {form.hobbies.map((hobby, i) => (
@@ -180,14 +147,14 @@ export default function Profile() {
         </div>
 
         {/* Bio */}
-        <textarea
-          name="bio"
-          value={form.bio}
-          onChange={handleChange}
-          placeholder="Kendinizi kısaca tanıtın..."
-          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
-          rows={4}
-        />
+        <textarea name="bio" value={form.bio} onChange={handleChange} placeholder="Kendinizi kısaca tanıtın..."
+          className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white" rows={4} />
+
+        {/* isPublic checkbox */}
+        <div className="flex items-center gap-2">
+          <input type="checkbox" name="isPublic" checked={form.isPublic} onChange={handleChange} />
+          <label className="text-sm text-gray-700 dark:text-white">Profilim herkese açık olsun</label>
+        </div>
 
         <button type="submit" className="w-full bg-mint text-navy font-bold py-3 rounded-xl hover:opacity-90 transition mt-4">
           Profili Kaydet
