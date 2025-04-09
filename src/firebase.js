@@ -1,10 +1,11 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// 🔥 Bu kısmı kendi projenin verileriyle doldur!
+// 🔥 Bu bilgileri kendi Firebase projenin config ekranından aldığını varsayıyorum
 const firebaseConfig = {
-   apiKey: "AIzaSyACHMmoglUKUC8AnI6KvJAXecoj4l7RXJM",
+ apiKey: "AIzaSyACHMmoglUKUC8AnI6KvJAXecoj4l7RXJM",
   authDomain: "becerico.firebaseapp.com",
   projectId: "becerico",
   storageBucket: "becerico.firebasestorage.app",
@@ -13,9 +14,13 @@ const firebaseConfig = {
   measurementId: "G-R58R3XWWKR"
 };
 
-// Initialize Firebase
+// Firebase'i başlat
 const app = initializeApp(firebaseConfig);
+
+// Auth, Google ve Firestore bağlantıları
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+const db = getFirestore(app);
 
-export { auth, provider };
+// Bunları dışarı aktarıyoruz ki diğer dosyalarda kullanabilelim
+export { auth, provider, db };
