@@ -15,11 +15,10 @@ export default function Profile() {
     district: '',
     skills: [],
     skillInput: '',
-    bio: '',
-    hobbies: []
+    hobbies: [],
+    hobbyInput: '',
+    bio: ''
   });
-
-  const hobbyOptions = ['Kitap Okumak', 'Spor', 'Yazılım', 'Müzik', 'Seyahat', 'Resim'];
 
   useEffect(() => {
     if (!user) {
@@ -33,16 +32,6 @@ export default function Profile() {
     setForm({ ...form, [name]: value });
   };
 
-  const handleHobbyChange = (e) => {
-    const value = e.target.value;
-    setForm((prev) => ({
-      ...prev,
-      hobbies: prev.hobbies.includes(value)
-        ? prev.hobbies.filter((h) => h !== value)
-        : [...prev.hobbies, value],
-    }));
-  };
-
   const handleAddSkill = () => {
     if (form.skillInput.trim() !== '') {
       setForm({
@@ -53,10 +42,21 @@ export default function Profile() {
     }
   };
 
+  const handleAddHobby = () => {
+    if (form.hobbyInput.trim() !== '') {
+      setForm({
+        ...form,
+        hobbies: [...form.hobbies, form.hobbyInput],
+        hobbyInput: '',
+      });
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Profil Verileri:', form);
-    alert('Profiliniz kaydedildi! (demo)');
+    console.log('📌 Profil Verileri:', form);
+    alert('Profil başarıyla kaydedildi!');
+    navigate('/profil'); // kendini yenileme gibi çalışır
   };
 
   return (
@@ -153,6 +153,32 @@ export default function Profile() {
           </ul>
         </div>
 
+        {/* Hobiler */}
+        <div>
+          <label className="block mb-1 font-semibold text-navy dark:text-mint">Hobiler</label>
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={form.hobbyInput}
+              onChange={(e) => setForm({ ...form, hobbyInput: e.target.value })}
+              placeholder="Bir hobi yaz..."
+              className="flex-grow p-2 border rounded dark:bg-gray-800 dark:text-white"
+            />
+            <button
+              type="button"
+              onClick={handleAddHobby}
+              className="bg-mint text-navy px-4 py-2 rounded hover:opacity-90"
+            >
+              Ekle
+            </button>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {form.hobbies.map((hobby, i) => (
+              <li key={i} className="px-3 py-1 bg-gray-700 text-white rounded-full text-sm">{hobby}</li>
+            ))}
+          </ul>
+        </div>
+
         {/* Bio */}
         <textarea
           name="bio"
@@ -162,24 +188,6 @@ export default function Profile() {
           className="w-full p-2 border rounded dark:bg-gray-800 dark:text-white"
           rows={4}
         />
-
-        {/* Hobiler */}
-        <div>
-          <label className="block mb-1 font-semibold text-navy dark:text-mint">Hobiler</label>
-          <div className="flex flex-wrap gap-3">
-            {hobbyOptions.map((hobby) => (
-              <label key={hobby} className="flex items-center gap-2 text-sm text-gray-700 dark:text-white">
-                <input
-                  type="checkbox"
-                  value={hobby}
-                  checked={form.hobbies.includes(hobby)}
-                  onChange={handleHobbyChange}
-                />
-                {hobby}
-              </label>
-            ))}
-          </div>
-        </div>
 
         <button type="submit" className="w-full bg-mint text-navy font-bold py-3 rounded-xl hover:opacity-90 transition mt-4">
           Profili Kaydet
