@@ -19,7 +19,7 @@ export default function Register() {
       const result = await createUserWithEmailAndPassword(auth, form.email, form.password);
       console.log('✅ Kayıt Başarılı:', result.user);
       alert('Kayıt başarılı!');
-      navigate('/');
+      navigate('/profil'); // ✅ PROFİL YÖNLENDİRMESİ BURADA
     } catch (err) {
       console.error('❌ Kayıt Hatası:', err);
       setError(err.message);
@@ -31,7 +31,7 @@ export default function Register() {
       const result = await signInWithPopup(auth, provider);
       console.log('✅ Google ile giriş:', result.user);
       alert('Google ile giriş başarılı!');
-      navigate('/');
+      navigate('/profil'); // ✅ GOOGLE İÇİN DE PROFİLE GİT
     } catch (err) {
       console.error('❌ Google ile giriş hatası:', err);
       setError(err.message);
