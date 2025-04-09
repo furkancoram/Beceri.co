@@ -13,13 +13,15 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    console.log('📨 Form gönderildi');
+
     try {
       const result = await createUserWithEmailAndPassword(auth, form.email, form.password);
-      console.log('Kayıt Başarılı:', result.user);
+      console.log('✅ Kayıt Başarılı:', result.user);
       alert('Kayıt başarılı!');
       navigate('/');
     } catch (err) {
-      console.error('Kayıt Hatası:', err);
+      console.error('❌ Kayıt Hatası:', err);
       setError(err.message);
     }
   };
@@ -27,11 +29,11 @@ export default function Register() {
   const handleGoogleSignup = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
-      console.log('Google ile giriş:', result.user);
+      console.log('✅ Google ile giriş:', result.user);
       alert('Google ile giriş başarılı!');
       navigate('/');
     } catch (err) {
-      console.error('Google Hatası:', err);
+      console.error('❌ Google ile giriş hatası:', err);
       setError(err.message);
     }
   };
