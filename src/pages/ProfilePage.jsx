@@ -48,11 +48,10 @@ export default function ProfilePage() {
   );
   const querySnapshot = await getDocs(q);
   const data = querySnapshot.docs
-    .filter(doc => doc.data().createdAt) // ✅ Yalnızca timestamp oluşmuş olanları al
+    .filter(doc => doc.data().createdAt) // ✅ createdAt tanımlı olanları filtrele
     .map(doc => ({ id: doc.id, ...doc.data() }));
   setPosts(data);
 };
-
 
   const handlePost = async () => {
     if (newPost.trim() === '' || newPost.length > 250) return;
